@@ -1,0 +1,25 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { BarChart3, CalendarDays, CircleDollarSign, ReceiptText, TrendingUp } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { api, formatMoney } from "@/lib/api";
+import type { ReportData } from "@/lib/types";
+import { Button, ErrorNotice, Input, PageTitle, Panel, Spinner } from "@/components/ui";
+
+const dateValue = (date: Date) => date.toISOString().slice(0, 10);
+const DEFAULT_END = dateValue(new Date());
+const DEFAULT_START = dateValue(new Date(Date.now() - 29 * 86400000));
+export default function ReportsView() {
+  const [start, setStart] = useState(DEFAULT_START); const [end, setEnd] = useState(DEFAULT_END); const [data, setData] = useState<ReportData | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState("");
+  const load = async () => { setLoading(true); setError(""); try { setData(await api.get<ReportData>(`/reports/summary?start=${start}&end=${end}`)); } catch (e) { setError(e instanceof Error ? e.message : "Could not load reports"); } finally { setLoading(false); } };
+  useEffect(() => { api.get<ReportData>(`/reports/summary?start=${DEFAULT_START}&end=${DEFAULT_END}`).then(setData).catch((e) => setError(e instanceof Error ? e.message : "Could not load reports")).finally(() => setLoading(false)); }, []); const max = useMemo(() => Math.max(...(data?.dailySales.map((d) => d.total) || [1]), 1), [data]);
+  const cards: Array<{ label: string; value: string; Icon: LucideIcon; color: string }> = data ? [
+    { label: "Revenue", value: formatMoney(data.revenue), Icon: TrendingUp, color: "text-emerald-600 bg-emerald-50" },
+    { label: "Gross profit", value: formatMoney(data.grossProfit), Icon: CircleDollarSign, color: "text-indigo-600 bg-indigo-50" },
+    { label: "Purchases", value: formatMoney(data.purchaseTotal), Icon: BarChart3, color: "text-amber-600 bg-amber-50" },
+    { label: "Transactions", value: String(data.transactionCount), Icon: ReceiptText, color: "text-blue-600 bg-blue-50" },
+  ] : [];
+  if (loading && !data) return <Spinner label="Preparing reports" />;
+  return <div><PageTitle title="Reports" subtitle="Sales, profit, purchases and product performance" action={<div className="flex flex-wrap gap-2"><Input type="date" value={start} onChange={(e) => setStart(e.target.value)} className="w-auto" /><Input type="date" value={end} onChange={(e) => setEnd(e.target.value)} className="w-auto" /><Button onClick={load}><CalendarDays size={17} />Apply</Button></div>} />{error && <ErrorNotice message={error} />}{data && <><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{cards.map(({ label, value, Icon, color }) => <Panel key={label} className="p-4"><div className="flex justify-between"><div><p className="text-xs text-slate-500">{label}</p><b className="mt-2 block text-xl">{value}</b></div><span className={`grid h-10 w-10 place-items-center rounded-xl ${color}`}><Icon size={19} /></span></div></Panel>)}</div><div className="mt-4 grid gap-4 xl:grid-cols-[1.4fr_.8fr]"><Panel className="p-5"><h2 className="font-bold">Daily sales</h2><p className="text-xs text-slate-500">Revenue during selected period</p>{data.dailySales.length ? <div className="mt-6 flex h-56 items-end gap-1.5 overflow-x-auto">{data.dailySales.map((day) => <div key={day.date} className="group flex h-full min-w-4 flex-1 items-end" title={`${day.date}: ${formatMoney(day.total)}`}><div className="w-full rounded-t bg-indigo-500 transition group-hover:bg-emerald-500" style={{ height: `${Math.max(day.total / max * 100, 4)}%` }} /></div>)}</div> : <div className="grid h-56 place-items-center text-sm text-slate-400">No sales in this period</div>}</Panel><Panel className="p-5"><h2 className="font-bold">Payment mix</h2><div className="mt-5 space-y-4">{data.paymentMix.filter((p) => p.total > 0).map((item, index) => <div key={item.method}><div className="mb-1 flex justify-between text-sm"><span>{item.method}</span><b>{formatMoney(item.total)}</b></div><div className="h-2 rounded-full bg-slate-100"><div className={`h-full rounded-full ${["bg-emerald-500", "bg-indigo-500", "bg-pink-500", "bg-amber-500", "bg-blue-500"][index % 5]}`} style={{ width: `${data.revenue ? item.total / data.revenue * 100 : 0}%` }} /></div></div>)}{!data.paymentMix.some((p) => p.total > 0) && <p className="text-sm text-slate-400">No payment data</p>}</div></Panel></div><Panel className="mt-4 p-5"><h2 className="font-bold">Top-selling products</h2><div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{data.topProducts.map((item, index) => <div key={item.name} className="flex items-center gap-3 rounded-xl bg-slate-50 p-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-indigo-100 text-xs font-bold text-indigo-700">#{index + 1}</span><div className="min-w-0"><b className="block truncate text-sm">{item.name}</b><span className="text-xs text-slate-500">{item.quantity} units sold</span></div></div>)}</div></Panel></>}</div>;
+}

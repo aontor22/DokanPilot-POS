@@ -1,0 +1,12 @@
+export type Role = "ADMIN" | "MANAGER" | "CASHIER";
+export type User = { id: string; name: string; email: string; role: Role; active: boolean; lastLoginAt?: string | null; createdAt?: string };
+export type Category = { id: string; name: string; color: string; _count?: { products: number } };
+export type Product = { id: string; name: string; sku: string; barcode?: string | null; unit: string; costPrice: string | number; sellingPrice: string | number; stock: number; lowStock: number; active: boolean; categoryId: string; category: Category; createdAt?: string };
+export type Customer = { id: string; name: string; phone?: string | null; email?: string | null; address?: string | null; dueBalance: string | number; createdAt: string };
+export type Supplier = Customer;
+export type SaleItem = { id: string; quantity: number; unitPrice: string | number; total: string | number; product: Product };
+export type Sale = { id: string; invoiceNo: string; subtotal: string | number; tax: string | number; discount: string | number; total: string | number; paid: string | number; due: string | number; paymentMethod: string; status: string; createdAt: string; customer?: Customer | null; cashier?: { name: string }; items: SaleItem[] };
+export type Purchase = { id: string; referenceNo: string; total: string | number; paid: string | number; due: string | number; createdAt: string; supplier?: Supplier | null; createdBy?: { name: string }; items: Array<{ id: string; quantity: number; costPrice: string | number; total: string | number; product: Product }> };
+export type DashboardData = { todaySales: number; transactionCount: number; averageBasket: number; productCount: number; customerCount: number; lowStock: Product[]; recentSales: Sale[] };
+export type InventoryData = { products: Product[]; lowStock: Product[]; movements: Array<{ id: string; type: string; quantity: number; reference?: string | null; note?: string | null; createdAt: string; product: { name: string; sku: string }; user: { name: string } }> };
+export type ReportData = { revenue: number; costOfGoods: number; grossProfit: number; purchaseTotal: number; transactionCount: number; dailySales: Array<{ date: string; total: number }>; topProducts: Array<{ name: string; quantity: number }>; paymentMix: Array<{ method: string; total: number }> };
