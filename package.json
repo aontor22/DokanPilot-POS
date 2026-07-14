@@ -25,14 +25,16 @@
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",
+    "lucide-react": "^0.552.0",
     "next": "16.2.6",
+    "nitro": "^3.0.260610-beta",
     "react": "19.2.6",
-    "react-dom": "19.2.6",
-    "lucide-react": "^0.552.0"
+    "react-dom": "19.2.6"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.37.1",
     "@tailwindcss/postcss": "4.2.1",
+    "@tailwindcss/vite": "^4.3.2",
     "@types/node": "22.19.19",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",

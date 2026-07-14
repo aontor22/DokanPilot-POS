@@ -10,6 +10,7 @@
     "prisma:generate": "prisma generate",
     "migrate:dev": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
+    "postinstall": "prisma generate",
     "seed": "prisma db seed",
     "verify": "node scripts/verify.mjs"
   },
