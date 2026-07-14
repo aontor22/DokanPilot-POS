@@ -40,3 +40,9 @@ next-env.d.ts
 /.sites-runtime/
 /outputs/
 /work/
+
+.npmrc
+.openai/
+.vinext/
+.vercel/
+*.tsbuildinfo
